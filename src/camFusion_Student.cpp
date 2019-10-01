@@ -154,5 +154,29 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
 
 void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bbBestMatches, DataFrame &prevFrame, DataFrame &currFrame)
 {
-    // ...
+    cv::Mat count_table = cv::Mat::zeros(prevFrame.boundingBoxes.size() , currFrame.boundingBoxes.size(), CV_32S);
+    for(cv::DMatch& match_point : matches) {
+        const auto& prev_pt = prevFrame.keypoints[match_point.queryIdx].pt;
+        const auto& curr_pt = currFrame.keypoints[match_point.trainIdx].pt;
+        for(size_t i = 0; prevFrame.boundingBoxes.size(); ++i) {
+            for(size_t j = 0; currFrame.boundingBoxes.size(); ++j) {
+                if(prevFrame.boundingBoxes[i].roi.contains(prev_pt) &&  currFrame.boundingBoxes[j].roi.contains(curr_pt)) {
+                    count_table.at<int>(i,j)++;
+                }
+            }
+        }
+    }
+    int best_match_value, best_match_idx;
+    for(size_t i = 0; i < count_table.rows; ++i) {
+        best_match_value = 0;
+        best_match_idx = -1;
+        for(size_t j = 0; j < count_table.cols; ++j) {
+            if(count_table.at<int>(i,j) > 0 || count_table.at<int>(i,j) > best_match_value){
+                best_match_idx = j;
+            }
+        }
+        if(best_match_idx != -1) {
+            bbBestMatches.emplace(i, best_match_idx);
+        }
+    }
 }

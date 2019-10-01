@@ -158,8 +158,8 @@ void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bb
     for(cv::DMatch& match_point : matches) {
         const auto& prev_pt = prevFrame.keypoints[match_point.queryIdx].pt;
         const auto& curr_pt = currFrame.keypoints[match_point.trainIdx].pt;
-        for(size_t i = 0; prevFrame.boundingBoxes.size(); ++i) {
-            for(size_t j = 0; currFrame.boundingBoxes.size(); ++j) {
+        for(size_t i = 0; i < prevFrame.boundingBoxes.size(); ++i) {
+            for(size_t j = 0; j < currFrame.boundingBoxes.size(); ++j) {
                 if(prevFrame.boundingBoxes[i].roi.contains(prev_pt) &&  currFrame.boundingBoxes[j].roi.contains(curr_pt)) {
                     count_table.at<int>(i,j)++;
                 }

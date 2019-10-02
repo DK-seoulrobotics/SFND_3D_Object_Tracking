@@ -148,7 +148,20 @@ void computeTTCCamera(std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPo
 void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
                      std::vector<LidarPoint> &lidarPointsCurr, double frameRate, double &TTC)
 {
-    // ...
+    std::cout << lidarPointsPrev.size() << lidarPointsCurr.size() << std::endl;
+    double average_prev_x = 0.0, average_curr_x = 0.0;
+    for(auto it=lidarPointsPrev.begin(); it!=lidarPointsPrev.end(); ++it) {
+        average_prev_x = average_prev_x + it->x;
+    }
+    average_prev_x = average_prev_x / lidarPointsPrev.size();
+
+    for(auto it=lidarPointsCurr.begin(); it!=lidarPointsCurr.end(); ++it) {
+        average_curr_x = average_curr_x + it->x;
+    }
+    average_curr_x = average_curr_x / lidarPointsCurr.size();
+
+    // compute TTC from both measurements
+    TTC = average_curr_x * (1.0 / frameRate) / (average_prev_x - average_curr_x);
 }
 
 
@@ -171,8 +184,9 @@ void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bb
         best_match_value = 0;
         best_match_idx = -1;
         for(size_t j = 0; j < count_table.cols; ++j) {
-            if(count_table.at<int>(i,j) > 0 || count_table.at<int>(i,j) > best_match_value){
+            if(count_table.at<int>(i,j) > 0 && count_table.at<int>(i,j) > best_match_value){
                 best_match_idx = j;
+                best_match_value = count_table.at<int>(i,j);
             }
         }
         if(best_match_idx != -1) {
